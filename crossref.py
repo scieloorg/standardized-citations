@@ -230,3 +230,45 @@ def main():
     )
 
     args = parser.parse_args()
+
+    try:
+
+        art_meta = RestfulClient()
+        cac = CrossrefAsyncCollector(email=args.email,
+                                     mongo_host=args.mongo_host,
+                                     mongo_database=args.mongo_database,
+                                     mongo_collection=args.mongo_collection)
+
+        cit_ids_to_attrs = {}
+
+        start_time = time.time()
+
+        if args.pid:
+            logging.info('Running in one PID mode')
+            document = art_meta.document(collection=args.col, code=args.pid)
+
+            if document:
+                logging.info('Extracting info from cited references in %s ' % document.publisher_id)
+                cit_ids_to_attrs = cac.extract_attrs(document)
+        else:
+            logging.info('Running in many PIDs mode')
+
+            for document in art_meta.documents(collection=args.col,
+                                               from_date=format_date(args.from_date),
+                                               until_date=format_date(args.until_date)):
+                logging.info('Extracting info from cited references in %s ' % document.publisher_id)
+                cit_ids_to_attrs.update(cac.extract_attrs(document))
+
+        loop = asyncio.get_event_loop()
+        future = asyncio.ensure_future(cac.run(cit_ids_to_attrs))
+        loop.run_until_complete(future)
+
+        end_time = time.time()
+        logging.info('Duration {0} seconds.'.format(end_time - start_time))
+
+    except KeyboardInterrupt:
+        print("Interrupt by user")
+
+
+if __name__ == '__main__':
+    main()
