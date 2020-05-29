@@ -141,3 +141,22 @@ class CrossrefAsyncCollector(object):
         """
         cit_id = cit.data['v880'][0]['_']
         return '{0}-{1}'.format(cit_id, collection)
+
+    def save_crossref_metadata(self, id_to_metadata: dict):
+        """
+        Persiste os metadados da referência citada.
+
+        :param id_to_metadata: dicionário com id da referência citada e seus respectivos metadados Crossref
+        """
+        if self.persist_mode == 'json':
+            with open(self.path_results, 'a') as f:
+                json.dump(id_to_metadata, f)
+                f.write('\n')
+
+        elif self.persist_mode == 'mongo':
+            self.mongo.update_one(filter={'_id': id_to_metadata['_id']},
+                                  update={'$set': {
+                                      'crossref': id_to_metadata['crossref'],
+                                      'update-date': datetime.now()
+                                  }},
+                                  upsert=True)
