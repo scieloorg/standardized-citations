@@ -118,6 +118,24 @@ class Standardizer:
                     return keys, VOLUME_IS_INFERRED
 
         return keys, VOLUME_NOT_USED
+
+    def get_issns(self, matched_issnls: set):
+        """
+        Obtém todos os ISSNs associados a um set de ISSN-Ls.
+
+        :param matched_issnls: ISSN-Ls casados para uma dada referência citada
+        :return: set de ISSNs vinculados aos ISSNL-s
+        """
+        possible_issns = set()
+
+        for mi in matched_issnls:
+            possible_issns = possible_issns.union(
+                set(
+                    [j for j in self.db['issnl-to-data'].get(mi, {}).get('issns', [])]
+                )
+            )
+
+        return possible_issns
     def mount_id(self, cit: Citation, collection: str):
         """
         Monta o identificador de uma referência citada.
