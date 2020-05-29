@@ -21,3 +21,12 @@ def remove_invalid_chars(text):
         elif ord(t) >= 32 and ord(t) != 127:
             vchars.append(t)
     return ''.join(vchars)
+
+
+def remove_accents(text):
+    """
+    Transforma caracteres acentuados de text em caracteres sem acento.
+    :param text: texto a ser tratado
+    :return: texto sem caracteres acentuados
+    """
+    return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII')
