@@ -86,3 +86,15 @@ class Standardizer:
                 return pickle.load(f)
         except FileNotFoundError:
             logging.error('File {0} does not exist'.format(path_db))
+
+    def mount_id(self, cit: Citation, collection: str):
+        """
+        Monta o identificador de uma referência citada.
+
+        :param cit: referência citada
+        :param collection: coleção em que a referência foi citada
+        :return: código identificador da citação
+        """
+        cit_id = cit.data['v880'][0]['_']
+        return '{0}-{1}'.format(cit_id, collection)
+
