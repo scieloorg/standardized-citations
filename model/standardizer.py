@@ -302,6 +302,25 @@ class Standardizer:
                 }
 
         return data
+
+    def save_standardized_citations(self, std_citations: dict):
+        """
+        Persiste as referências citadas normalizadas.
+
+        :param std_citations: dicionário de referências citadas normalizadas
+        """
+        if self.persist_mode == 'json':
+            with open(self.path_results, 'a') as f:
+                json.dump(std_citations, f)
+                f.write('\n')
+
+        elif self.persist_mode == 'mongo':
+            for v in std_citations.values():
+                self.mongo.update_one(
+                    filter={'_id': v['_id']},
+                    update={'$set': v},
+                    upsert=True)
+
     def get_citation_mongo_status(self, cit_id: str):
         """
         Obtém o status atual de normalização da referência citada.
