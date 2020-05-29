@@ -254,6 +254,54 @@ class Standardizer:
         cit_id = cit.data['v880'][0]['_']
         return '{0}-{1}'.format(cit_id, collection)
 
+    def mount_standardized_citation_data(self, status: int, key=None, issn_l=None):
+        """
+        Consulta issn_l (oriundo de key ou de issn_l) no dicionário issnl-to-data para formar a estrutura normalizada da
+        referencia citada. Monta estrutura normalizada da referencia citada, conforme os campos a seguir:
+
+            cit-id: identificador da referência citada (str)
+
+            issn-l: ISSN-Link do periódico citado (str)
+
+            issns: ISSNs associados ao ISSN-L (list de strs)
+
+            official-journal-title: títulos oficiais do periódico citado (str)
+
+            official-abbreviated-journal-title: títulos abreviados oficiais do periódico citado (lista de str)
+
+            alternative-journal-title: títulos alternativos do periódico citado (lista de str)
+
+            status: código indicador do méetodo para normalizar
+
+            crossref: metadados obtidos do servico CrossRef
+
+            pid: documento SciELO que a referêncica citada representa (se for o caso)
+
+            update-date: data de normalização
+
+        :param cit: referência citada
+        :param status: código indicador do método aplicado para normalizar
+        :param key: chave da qual o issn-l é extraído e buscado na base de correção
+        :param issn_l: issn-l a ser buscado na base de correção
+        :return: dicionário composto por pares chave-valor de dados normalizados
+        """
+        if not issn_l:
+            issn_l = self.extract_issnl_from_valid_match(key)
+
+        attrs = self.db['issnl-to-data'][issn_l]
+
+        data = {'issn-l': self.add_hifen_issn(issn_l),
+                'issn': [self.add_hifen_issn(i) for i in attrs['issns']],
+                'official-journal-title': attrs['main-title'],
+                'official-abbreviated-journal-title': attrs['main-abbrev-title'],
+                'alternative-journal-titles': attrs['alternative-titles'],
+                'status': status,
+                'crossref': {},
+                'pid': '',
+                'update-date': datetime.now().strftime('%Y-%m-%d')
+                }
+
+        return data
     def get_citation_mongo_status(self, cit_id: str):
         """
         Obtém o status atual de normalização da referência citada.
