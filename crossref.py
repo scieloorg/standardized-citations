@@ -161,6 +161,31 @@ class CrossrefAsyncCollector(object):
                                   }},
                                   upsert=True)
 
+    async def run(self, citations_attrs: dict):
+        sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
+        tasks = []
+
+        async with ClientSession(headers={'mailto:': self.email}) as session:
+            for cit_id, attrs in citations_attrs.items():
+                if 'doi' in attrs:
+                    url = ENDPOINT_CROSSREF_WORKS.format(attrs['doi'])
+                    mode = 'doi'
+
+                else:
+                    url = ENDPOINT_CROSSREF_OPENURL
+                    for k, v in attrs.items():
+                        if k != 'doi':
+                            url += '&' + k + '=' + v
+                    url += '&pid=' + self.email
+                    url += '&format=unixref'
+                    url += '&multihit=false'
+                    mode = 'attrs'
+
+                task = asyncio.ensure_future(self.bound_fetch(cit_id, url, sem, session, mode))
+                tasks.append(task)
+            responses = asyncio.gather(*tasks)
+            await responses
+
     async def bound_fetch(self, cit_id, url, semaphore, session, mode):
         async with semaphore:
             await self.fetch(cit_id, url, session, mode)
