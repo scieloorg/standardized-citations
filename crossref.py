@@ -160,6 +160,34 @@ class CrossrefAsyncCollector(object):
                                       'update-date': datetime.now()
                                   }},
                                   upsert=True)
+    async def fetch(self, cit_id, url, session, mode):
+        try:
+            async with session.get(url) as response:
+                try:
+                    logging.info('Trying to collect metadata for %s' % cit_id)
+
+                    if mode == 'doi':
+                        metadata = await response.json()
+
+                    else:
+                        raw_metadata = await response.text()
+                        metadata = self.parse_crossref_openurl_result(raw_metadata)
+
+                    if metadata:
+                        id_to_metadata = {'_id': cit_id, 'crossref': metadata}
+                        self.save_crossref_metadata(id_to_metadata)
+                except JSONDecodeError as e:
+                    logging.warning('JSONDecodeError: %s' % cit_id)
+        except ContentTypeError as e:
+            logging.warning('ContentTypeError: %s' % cit_id)
+        except ServerDisconnectedError as e:
+            logging.warning('ServerDisconnectedError: %s' % cit_id)
+        except TimeoutError as e:
+            logging.warning('TimeoutError: %s' % cit_id)
+        except ClientConnectorError as e:
+            logging.warning('ClientConectorError: %s' % cit_id)
+
+
 def format_date(date: datetime):
     if not date:
         return None
