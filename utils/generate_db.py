@@ -158,3 +158,32 @@ def save(db_data, path_db):
     """
     with open(path_db, 'wb') as f:
         pickle.dump(db_data, f)
+
+
+def main(path_db_title, path_db_year_volume, path_db_year_volume_lr, path_equations, version):
+    logging.info('Loading title data')
+    issnl_to_data, title_to_issnl, issn_to_issnl = get_db_issnl_and_db_title(path_db_title)
+
+    logging.info('Loading year-volume data')
+    issn_year_volume, title_year_volume = get_db_year_volume(path_db_year_volume)
+
+    logging.info('Loading year-volume from linear regression data')
+    issn_year_volume_lr, issn_year_volume_lr_ml1 = get_db_year_volume_linear_regression(path_db_year_volume_lr)
+
+    logging.info('Loading issnl linear regressions')
+    issn_to_equation = get_equations(path_equations)
+
+    dbs = {
+        'issnl-to-data': issnl_to_data,
+        'issn-to-issnl': issn_to_issnl,
+        'title-to-issnl': title_to_issnl,
+        'issn-year-volume': issn_year_volume,
+        'title-year-volume': title_year_volume,
+        'issn-year-volume-lr': issn_year_volume_lr,
+        'issn-year-volume-lr-ml1': issn_year_volume_lr_ml1,
+        'issn-to-equation': issn_to_equation,
+        'version': version,
+        'creation-date': datetime.now().strftime('%Y-%m-%d')
+    }
+
+    save(dbs, 'bc-' + version + '.bin')
