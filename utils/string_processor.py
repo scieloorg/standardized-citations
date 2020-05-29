@@ -47,3 +47,14 @@ def alpha_num_space(text, include_special_chars=False):
         else:
             new_str.append(' ')
     return ''.join(new_str)
+
+
+def remove_double_spaces(text):
+    """
+    Remove espaços duplos de text
+    :param text: texto a ser tratado
+    :return: texto sem espaços duplos
+    """
+    while '  ' in text:
+        text = text.replace('  ', ' ')
+    return text.strip()
