@@ -165,3 +165,68 @@ def format_date(date: datetime):
         return None
     return date.strftime('%Y-%m-%d')
 
+
+def main():
+    usage = "collect metadata from the Crossref Service"
+
+    parser = argparse.ArgumentParser(textwrap.dedent(usage))
+
+    parser.add_argument(
+        '-c', '--col',
+        default=None,
+        dest='col',
+        help='normalize cited references in an entire collection'
+    )
+
+    parser.add_argument(
+        '-f', '--from_date',
+        type=lambda x: datetime.strptime(x, '%Y-%m-%d'),
+        nargs='?',
+        help='collect metadata for cited references in documents published from a date (YYYY-MM-DD)'
+    )
+
+    parser.add_argument(
+        '-u', '--until_date',
+        type=lambda x: datetime.strptime(x, '%Y-%m-%d'),
+        nargs='?',
+        default=datetime.now(),
+        help='collect metadata for cited references in documents published until a date (YYYY-MM-DD)'
+    )
+
+    parser.add_argument(
+        '-i', '--document_id',
+        default=None,
+        dest='pid',
+        help='collect metadata for cited for the cited references in a PID (document)'
+    )
+
+    parser.add_argument(
+        '-a', '--mongo_host',
+        default=None,
+        dest='mongo_host',
+        help='MongoDB host address'
+    )
+
+    parser.add_argument(
+        '-m', '--mongo_database',
+        default=DEFAULT_MONGO_DATABASE_NAME,
+        dest='mongo_database',
+        help='MongoDB database name'
+    )
+
+    parser.add_argument(
+        '-l', '--mongo_collection',
+        default=DEFAULT_MONGO_COLLECTION_NAME,
+        dest='mongo_collection',
+        help='MongoDB collection name'
+    )
+
+    parser.add_argument(
+        '-e', '--email',
+        required=True,
+        default=None,
+        dest='email',
+        help='an e-mail registered in the Crossref service'
+    )
+
+    args = parser.parse_args()
