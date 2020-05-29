@@ -60,3 +60,45 @@ class CrossrefAsyncCollector(object):
                     cit_id_to_attrs[cit_id] = cit_attrs
 
         return cit_id_to_attrs
+
+    def _extract_cit_attrs(self, cit: Citation):
+        """
+        Extraí os atributos de uma referência citada necessários para requisitar metadados CrossRef.
+
+        :param cit: referência citada
+        :return: dicionário de atributos para consulta no serviço CrossRef
+        """
+        if cit.doi:
+            return {'doi': cit.doi}
+
+        attrs = {}
+
+        if cit.first_author:
+            first_author_surname = cit.first_author.get('surname', '')
+            if first_author_surname:
+                attrs.update({'aulast': first_author_surname})
+
+        journal_title = cit.source
+        if journal_title:
+            cleaned_journal_title = preprocess_journal_title(journal_title)
+            if cleaned_journal_title:
+                attrs.update({'title': cleaned_journal_title})
+
+        publication_year = cit.publication_date
+        if publication_year:
+            attrs.update({'data': publication_year})
+
+        volume = cit.volume
+        if volume:
+            attrs.update({'volume': volume})
+
+        issue = cit.issue
+        if issue:
+            attrs.update({'issue': issue})
+
+        first_page = cit.first_page
+        if first_page:
+            attrs.update({'spage': first_page})
+
+        if attrs:
+            return attrs
