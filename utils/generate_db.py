@@ -80,3 +80,48 @@ def get_db_year_volume_linear_regression(path_db_year_volume_linear_regression, 
             issn_year_volume_more_or_less_one.add('-'.join([issn, year, rounded_predicted_vol_plus_one]))
 
     return issn_year_volume, issn_year_volume_more_or_less_one
+
+
+def get_db_issnl_and_db_title(path_db_issnl, sep='|'):
+    """
+    Extrai dicionário de base de correção ISSN-L-TO-DATA, TITLE-TO-ISSN-L e ISSN-TO-ISSN-L.
+
+    :param path_db_year_volume: caminho do arquivo da tabela de dados ISSN-L-ATRIBUTOS
+    :param sep: delimitador de campo do arquivo
+    :return: tupla (base de correção ISSN-L-TO-DATA, TITLE-TO-ISSN-L e ISSN-TO-ISSN-L)
+    """
+    issnl_to_data = {}
+    title_to_issnl = {}
+    issn_to_issnl = {}
+
+    with open(path_db_issnl) as f:
+        csv_reader = csv.DictReader(f, delimiter=sep)
+        for i in csv_reader:
+            issnl = i.get('ISSNL', '')
+            main_title = i.get('MAIN_TITLE', '').split('#')
+            main_abbrev_title = i.get('MAIN_ABBREV_TITLE', '').split('#')
+            issns = i.get('ISSNS', '').split('#')
+            alternative_titles = i.get('TITLES', '').split('#')
+
+            if issnl != '' and issnl not in issnl_to_data:
+                issnl_to_data[issnl] = {
+                    'main-title': main_title,
+                    'main-abbrev-title': main_abbrev_title,
+                    'issns': issns,
+                    'alternative-titles': alternative_titles
+                }
+
+                for ti in set(main_title + main_abbrev_title + alternative_titles):
+                    if ti not in title_to_issnl:
+                        title_to_issnl[ti] = set()
+                    title_to_issnl[ti].add(issnl)
+            else:
+                logging.info('ISSN-L %s is already in the list' % issnl)
+
+            for j in issns:
+                if j not in issn_to_issnl:
+                    issn_to_issnl[j] = issnl
+                else:
+                    logging.info('ISSN %s is associated with %s (beyond %s)' % (j, issnl, issn_to_issnl[j]))
+
+    return issnl_to_data, title_to_issnl, issn_to_issnl
