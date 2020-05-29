@@ -71,3 +71,38 @@ def preprocess_author_name(text):
     :return: nome tratado do autor
     """
     return remove_double_spaces(alpha_num_space(remove_accents(text)))
+
+
+def preprocess_journal_title(text, use_remove_invalid_chars=False):
+    """
+    Procedimento para tratar título de periódico.
+    Aplica:
+        1. Tratamento de caracteres HTML
+        2. Remoção de caracteres inválidos
+        3. Remoção de dados entre parenteses
+        4. Remoção de acentos, inclusive caracteres especiais
+        5. Manutenção de apenas caracteres alpha, numérico e espaço
+        6. Remoção de espaços duplos
+        7. Remove palavras especiais
+        8. Transforma caracteres para caixa alta
+    :param text: título do periódico a ser tratado
+    :param use_remove_invalid_chars: boolenano que indica se deve ou não ser aplicada remoção de caracteres inválidos
+    :return: título tratado do periódico
+    """
+    # Trata conteúdo HTML
+    text = html.unescape(text)
+
+    # Caso solicitado, remove caracteres inválidos
+    if use_remove_invalid_chars:
+        text = remove_invalid_chars(text)
+
+    # Remove parenteses e conteúdo interno
+    parenthesis_search = re.search(parenthesis_pattern, text)
+    while parenthesis_search is not None:
+        text = text[:parenthesis_search.start()] + text[parenthesis_search.end():]
+        parenthesis_search = re.search(parenthesis_pattern, text)
+
+    # Remove palavras especiais
+    for sw in special_words:
+        text = text.replace(sw, '')
+    return remove_double_spaces(alpha_num_space(remove_accents(text), include_special_chars=True)).upper()
