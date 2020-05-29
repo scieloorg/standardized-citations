@@ -87,6 +87,23 @@ class Standardizer:
         except FileNotFoundError:
             logging.error('File {0} does not exist'.format(path_db))
 
+    def extract_issnl_from_valid_match(self, valid_match: str):
+        """
+        Extrai ISSN-L a partir de uma chave ISSN-ANO-VOLUME.
+        Caso o ISSN não exista no dicionário issn-to-issnl, considera o próprio ISSN como ISSN-L.
+
+        :param valid_match: chave validada no formato ISSN-ANO-VOLUME
+        :return: ISSN-L
+        """
+        issn, year, volume = valid_match.split('-')
+
+        issnl = self.db['issn-to-issnl'].get(issn, '')
+
+        if not issnl:
+            issnl = issn
+
+        return issnl
+
     def extract_issn_year_volume_keys(self, cit: Citation, issns: set):
         """
         Extrai chaves ISSN-YEAR-VOLUME para uma referência citada e lista de ISSNs.
