@@ -41,3 +41,22 @@ class CrossrefAsyncCollector(object):
         else:
             self.persist_mode = 'json'
             self.path_results = 'crossref-results-' + str(time.time()) + '.json'
+
+    def extract_attrs(self, article: Article):
+        """
+        Extrai os atributos de todas as referências citadas de um documento.
+
+        :param article: documento do qual serão extraídos os atributos das referências citadas
+        :return: dicionário de ids de citações e respectivos atributos
+        """
+        cit_id_to_attrs = {}
+
+        if article.citations:
+            for cit in article.citations:
+                if cit.publication_type == 'article':
+                    cit_id = self.mount_id(cit, article.collection_acronym)
+                    cit_attrs = self._extract_cit_attrs(cit)
+
+                    cit_id_to_attrs[cit_id] = cit_attrs
+
+        return cit_id_to_attrs
