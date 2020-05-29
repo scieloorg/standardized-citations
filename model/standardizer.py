@@ -136,6 +136,22 @@ class Standardizer:
             )
 
         return possible_issns
+    def infer_volume(self, issn: str, year: str):
+        """
+        Infere o volume de um periódico a partir de issn-to-equation.
+
+        :param issn: issn para o qual o volume será inferido
+        :return: str do volume inferido arredondado para valor inteiro (se volume inferido for maior que 0)
+        """
+        equation = self.db['issn-to-equation'].get(issn)
+
+        if equation:
+            a, b, r2 = equation
+            volume = a + (b * int(year))
+
+            if volume > 0:
+                return str(round(volume))
+
     def mount_id(self, cit: Citation, collection: str):
         """
         Monta o identificador de uma referência citada.
