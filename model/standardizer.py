@@ -356,3 +356,56 @@ class Standardizer:
                 valid_matches.add(k)
 
         return valid_matches
+
+    def _standardize(self, cit, cleaned_cit_journal_title, mode='exact'):
+        """
+        Processo auxiliar que realiza casamento de um título de periódico citado e valida casamentos, se houver
+        mais de um. O processo de validação consiste em desambiguar os possíveis ISSN-Ls associados a um periódico
+        citado usando dados de ano e volume da referência citada.
+
+        :param cit: referência citada
+        :param mode: mode de execução de casamento ['exact', 'fuzzy']
+        :param cleaned_cit_journal_title: título limpo do periódico citado
+        :return: dicionário composto por dados normalizados
+        """
+        if mode == 'fuzzy':
+            matches = self.match_fuzzy(cleaned_cit_journal_title)
+        else:
+            matches = self.match_exact(cleaned_cit_journal_title)
+
+        # Verifica se houve casamento com apenas com um ISSN-L e se é casamento exato
+        if len(matches) == 1 and mode == 'exact':
+            return self.mount_standardized_citation_data(status=STATUS_EXACT, issn_l=matches.pop())
+
+        # Verifica se houve casamento com mais de um ISSN-L ou se é casamento aproximado e houve apenas um casamento
+        elif len(matches) > 1 or (mode == 'fuzzy' and len(matches)) == 1:
+            # Carrega todos os ISSNs possiveis associados aos ISSN-Ls casados
+            possible_issns = self.get_issns(matches)
+
+            if possible_issns:
+                # Monta chaves ISSN-ANO-VOLUME
+                keys, mount_mode = self.extract_issn_year_volume_keys(cit, possible_issns)
+
+                if keys:
+                    # Valida chaves na base de ano e volume
+                    cit_valid_matches = self.validate_match(keys)
+
+                    if len(cit_valid_matches) == 1:
+                        status = self.get_status(mode, mount_mode, 'default')
+                        return self.mount_standardized_citation_data(status, cit_valid_matches.pop())
+
+                    elif len(cit_valid_matches) == 0:
+                        # Valida chaves na base de regressão linear
+                        cit_valid_matches = self.validate_match(keys, use_lr=True)
+
+                        if len(cit_valid_matches) == 1:
+                            status = self.get_status(mode, mount_mode, 'lr')
+                            return self.mount_standardized_citation_data(status, cit_valid_matches.pop())
+
+                        elif len(cit_valid_matches) == 0:
+                            # Valida chaves na base de regressão linear com volume flexibilizado
+                            cit_valid_matches = self.validate_match(keys, use_lr_ml1=True)
+
+                            if len(cit_valid_matches) == 1:
+                                status = self.get_status(mode, mount_mode, 'lr-ml1')
+                                return self.mount_standardized_citation_data(status, cit_valid_matches.pop())
