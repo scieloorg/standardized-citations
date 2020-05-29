@@ -58,3 +58,16 @@ def remove_double_spaces(text):
     while '  ' in text:
         text = text.replace('  ', ' ')
     return text.strip()
+
+
+def preprocess_author_name(text):
+    """
+    Procedimento que trata nome de autor.
+    Aplica:
+        1. Remoção de acentos
+        2. Manutenção de alpha e espaço
+        3. Remoção de espaços duplos
+    :param text: nome do autor a ser tratado
+    :return: nome tratado do autor
+    """
+    return remove_double_spaces(alpha_num_space(remove_accents(text)))
