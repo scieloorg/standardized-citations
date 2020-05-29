@@ -87,6 +87,37 @@ class Standardizer:
         except FileNotFoundError:
             logging.error('File {0} does not exist'.format(path_db))
 
+    def extract_issn_year_volume_keys(self, cit: Citation, issns: set):
+        """
+        Extrai chaves ISSN-YEAR-VOLUME para uma referência citada e lista de ISSNs.
+
+        :param cit: referência citada
+        :param issns: set de possíveis ISSNs
+        :return: set de chaves ISSN-ANO-VOLUME
+        """
+        keys = set()
+
+        cit_year = cit.publication_date
+
+        if cit_year:
+            if len(cit_year) > 4:
+                cit_year = cit_year[:4]
+
+            if len(cit_year) == 4 and cit_year.isdigit():
+                cit_vol = cit.volume
+
+                if cit_vol and cit_vol.isdigit():
+                    for i in issns:
+                        keys.add('-'.join([i, cit_year, cit_vol]))
+                    return keys, VOLUME_IS_ORIGINAL
+                else:
+                    for i in issns:
+                        cit_vol_inferred = self.infer_volume(i, cit_year)
+                        if cit_vol_inferred:
+                            keys.add('-'.join([i, cit_year, cit_vol_inferred]))
+                    return keys, VOLUME_IS_INFERRED
+
+        return keys, VOLUME_NOT_USED
     def mount_id(self, cit: Citation, collection: str):
         """
         Monta o identificador de uma referência citada.
