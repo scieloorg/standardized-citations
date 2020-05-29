@@ -51,3 +51,32 @@ def get_db_year_volume(path_db_year_volume, sep='|'):
                     title_year_volume.add('-'.join([title, year, volume]))
 
     return issn_year_volume, title_year_volume
+
+
+def get_db_year_volume_linear_regression(path_db_year_volume_linear_regression, sep='|'):
+    """
+    Extrai dicionário de base de validação ISSN-ANO-VOLUME e ISSN-ANO-VOLUME flexibilizada.
+
+    :param path_db_year_volume: caminho do arquivo da tabela de dados ISSN-ANO-VOLUME
+    :param sep: delimitador de campo do arquivo
+    :return: tupla (base de validação ISSN-ANO-VOLUME LR, ISSN-ANO-VOLUME LR ML1)
+    """
+    issn_year_volume = set()
+    issn_year_volume_more_or_less_one = set()
+
+    with open(path_db_year_volume_linear_regression) as f:
+        csv_reader = csv.DictReader(f, delimiter=sep)
+        for i in csv_reader:
+            issn = i.get('ISSN')
+            year = i.get('YEAR')
+
+            rounded_predicted_vol_ideal = i.get('ROUNDED PV')
+            issn_year_volume.add('-'.join([issn, year, rounded_predicted_vol_ideal]))
+
+            rounded_predicted_vol_minus_one = i.get('ROUNDED PV - 1')
+            issn_year_volume_more_or_less_one.add('-'.join([issn, year, rounded_predicted_vol_minus_one]))
+
+            rounded_predicted_vol_plus_one = i.get('ROUNDED PV + 1')
+            issn_year_volume_more_or_less_one.add('-'.join([issn, year, rounded_predicted_vol_plus_one]))
+
+    return issn_year_volume, issn_year_volume_more_or_less_one
