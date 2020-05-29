@@ -98,3 +98,15 @@ class Standardizer:
         cit_id = cit.data['v880'][0]['_']
         return '{0}-{1}'.format(cit_id, collection)
 
+    def get_citation_mongo_status(self, cit_id: str):
+        """
+        Obtém o status atual de normalização da referência citada.
+
+        :param cit_id: id da referência citada
+        :return: status atual de normalização da referência citada
+        """
+        if self.persist_mode == 'mongo':
+            cit_standardized = self.mongo.find_one({'_id': cit_id})
+            if cit_standardized:
+                return cit_standardized.get('status', STATUS_NOT_NORMALIZED)
+        return STATUS_NOT_NORMALIZED
