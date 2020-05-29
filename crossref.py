@@ -102,3 +102,31 @@ class CrossrefAsyncCollector(object):
 
         if attrs:
             return attrs
+
+    def parse_crossref_openurl_result(self, text):
+        """
+        Converte response.text para JSON com metadados obtidos do endpoint OPENURL.
+
+        :param response: resposta de requisição em formato de texto
+        :return: JSON com metadados obtidos no serviço CrossRef
+        """
+        try:
+            raw = xmltodict.parse(text)
+
+            for v in raw.get('doi_records', {}).values():
+                metadata = v.get('crossref')
+                if metadata and 'error' not in metadata.keys():
+
+                    owner = v.get('@owner')
+                    if owner:
+                        metadata.update({'owner': owner})
+
+                    timestamp = v.get('@timestamp')
+                    if timestamp:
+                        metadata.update({'timestamp': timestamp})
+
+                    return metadata
+
+        except ExpatError as e:
+            logging.warning("ExpatError {0}".format(text))
+            logging.warning(e)
