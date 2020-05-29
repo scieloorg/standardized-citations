@@ -1,0 +1,7 @@
+aiohttp
+articlemetaapi
+asyncio
+lxml
+pymongo
+xmltodict
+xylose
