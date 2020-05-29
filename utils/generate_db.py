@@ -147,3 +147,14 @@ def get_equations(path_equations, sep='|'):
                 issn_to_equation[issn] = (a, b, r)
 
     return issn_to_equation
+
+
+def save(db_data, path_db):
+    """
+    Persiste base de correção no disco, em formato binário.
+
+    :param db_data: dados a serem persistidos
+    :param path_db: nome do arquivo a ser persistido
+    """
+    with open(path_db, 'wb') as f:
+        pickle.dump(db_data, f)
