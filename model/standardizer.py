@@ -314,3 +314,26 @@ class Standardizer:
             if cit_standardized:
                 return cit_standardized.get('status', STATUS_NOT_NORMALIZED)
         return STATUS_NOT_NORMALIZED
+
+    def validate_match(self, keys, use_lr=False, use_lr_ml1=False):
+        """
+        Valida chaves ISSN-ANO-VOLUME nas bases de validação
+        :param keys: chaves em formato ISSN-ANO-VOLUME
+        :param use_lr: valida com dados de regressão linear de ISSN-ANO-VOLUME
+        :param use_lr_ml1: valida com dados de regressão linear de ISSN-ANO-VOLUME mais ou menos 1
+        :return: chaves validadas
+        """
+        valid_matches = set()
+
+        if use_lr:
+            validating_base = self.db['issn-year-volume-lr']
+        elif use_lr_ml1:
+            validating_base = self.db['issn-year-volume-lr-ml1']
+        else:
+            validating_base = self.db['issn-year-volume']
+
+        for k in keys:
+            if k in validating_base:
+                valid_matches.add(k)
+
+        return valid_matches
