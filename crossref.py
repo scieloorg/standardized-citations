@@ -160,6 +160,11 @@ class CrossrefAsyncCollector(object):
                                       'update-date': datetime.now()
                                   }},
                                   upsert=True)
+
+    async def bound_fetch(self, cit_id, url, semaphore, session, mode):
+        async with semaphore:
+            await self.fetch(cit_id, url, session, mode)
+
     async def fetch(self, cit_id, url, session, mode):
         try:
             async with session.get(url) as response:
