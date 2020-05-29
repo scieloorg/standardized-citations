@@ -136,6 +136,47 @@ class Standardizer:
             )
 
         return possible_issns
+
+    def get_status(self, match_mode: str, mount_mode: int, db_used: str):
+        """
+        Obtém o status com base no modo de casamento, de volume utilizado e de base de validação utilizada.
+
+        :param match_mode: modo de casamento ['exact', 'fuzzy']
+        :param mount_mode: modo de obtenção da chave de validação ['VOLUME_IS_ORIGINAL', VOLUME_IS_INFERRED']
+        :param db_used: base de validação utilizada ['lr', 'lr-ml1', 'default']
+        :return: código de status conforme método utilizado
+        """
+        if mount_mode == VOLUME_IS_ORIGINAL:
+            if match_mode == 'exact':
+                if db_used == 'lr':
+                    return STATUS_EXACT_VALIDATED_LR
+                elif db_used == 'lr-ml1':
+                    return STATUS_EXACT_VALIDATED_LR_ML1
+                elif db_used == 'default':
+                    return STATUS_EXACT_VALIDATED
+            else:
+                if db_used == 'lr':
+                    return STATUS_FUZZY_VALIDATED_LR
+                elif db_used == 'lr-ml1':
+                    return STATUS_FUZZY_VALIDATED_LR_ML1
+                elif db_used == 'default':
+                    return STATUS_FUZZY_VALIDATED
+        elif mount_mode == VOLUME_IS_INFERRED:
+            if match_mode == 'exact':
+                if db_used == 'lr':
+                    return STATUS_EXACT_VOLUME_INFERRED_VALIDATED_LR
+                elif db_used == 'lr-ml1':
+                    return STATUS_EXACT_VOLUME_INFERRED_VALIDATED_LR_ML1
+                elif db_used == 'default':
+                    return STATUS_EXACT_VOLUME_INFERRED_VALIDATED
+            else:
+                if db_used == 'lr':
+                    return STATUS_FUZZY_VOLUME_INFERRED_VALIDATED_LR
+                elif db_used == 'lr-ml1':
+                    return STATUS_FUZZY_VOLUME_INFERRED_VALIDATED_LR_ML1
+                elif db_used == 'default':
+                    return STATUS_FUZZY_VOLUME_INFERRED_VALIDATED
+
     def infer_volume(self, issn: str, year: str):
         """
         Infere o volume de um periódico a partir de issn-to-equation.
