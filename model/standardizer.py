@@ -152,6 +152,15 @@ class Standardizer:
             if volume > 0:
                 return str(round(volume))
 
+    def match_exact(self, journal_title: str):
+        """
+        Procura journal_title de forma exata no dicionário title-to-issnl.
+
+        :param journal_title: título do periódico citado
+        :return: set de ISSN-Ls associados de modo exato ao título do periódico citado
+        """
+        return self.db['title-to-issnl'].get(journal_title, set())
+
     def mount_id(self, cit: Citation, collection: str):
         """
         Monta o identificador de uma referência citada.
