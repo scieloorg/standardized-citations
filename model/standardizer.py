@@ -63,3 +63,13 @@ class Standardizer:
         if path_db:
             logging.info('Loading %s' % path_db)
             self.db = self.load_database(path_db)
+
+    def add_hifen_issn(self, issn: str):
+        """
+        Insere hífen no ISSN.
+
+        :param issn: ISSN sem hífen
+        :return: ISSN com hífen
+        """
+        if issn:
+            return issn[:4] + '-' + issn[4:]
