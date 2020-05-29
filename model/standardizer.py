@@ -73,3 +73,16 @@ class Standardizer:
         """
         if issn:
             return issn[:4] + '-' + issn[4:]
+
+    def load_database(self, path_db: str):
+        """
+        Carrega na memória o arquivo binário das bases de correção e validação.
+
+        :param path_db: caminho do arquivo binário
+        :return: base carregada em formato de dicionário
+        """
+        try:
+            with open(path_db, 'rb') as f:
+                return pickle.load(f)
+        except FileNotFoundError:
+            logging.error('File {0} does not exist'.format(path_db))
