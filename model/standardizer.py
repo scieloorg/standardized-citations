@@ -161,6 +161,30 @@ class Standardizer:
         """
         return self.db['title-to-issnl'].get(journal_title, set())
 
+    def match_fuzzy(self, journal_title: str):
+        """
+        Procura journal_title de forma aproximada no dicionário title-to-issnl.
+
+        :param journal_title: título do periódico citado
+        :return: set de ISSN-Ls associados de modo aproximado ao título do periódico citado
+        """
+        matches = set()
+
+        words = journal_title.split(' ')
+
+        # Para a comparação ser possível, é preciso que o título tenha pelo menos MIN_CHARS_LENGTH letras e seja
+        # formado por pelo menos MIN_WORDS_COUNT palavras.
+        if len(journal_title) > MIN_CHARS_LENGTH and len(words) >= MIN_WORDS_COUNT:
+            # O título oficial deve iniciar com a primeira palavra do título procurado
+            pattern = r'[\w|\s]*'.join([word for word in words]) + '[\w|\s]*'
+            title_pattern = re.compile(pattern, re.UNICODE)
+
+            # O título oficial deve iniciar com a primeira palavra do título procurado
+            for official_title in [ot for ot in self.db['title-to-issnl'].keys() if ot.startswith(words[0])]:
+                if title_pattern.fullmatch(official_title):
+                    matches = matches.union(self.db['title-to-issnl'][official_title])
+        return matches
+
     def mount_id(self, cit: Citation, collection: str):
         """
         Monta o identificador de uma referência citada.
