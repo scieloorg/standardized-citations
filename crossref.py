@@ -160,3 +160,8 @@ class CrossrefAsyncCollector(object):
                                       'update-date': datetime.now()
                                   }},
                                   upsert=True)
+def format_date(date: datetime):
+    if not date:
+        return None
+    return date.strftime('%Y-%m-%d')
+
