@@ -125,3 +125,25 @@ def get_db_issnl_and_db_title(path_db_issnl, sep='|'):
                     logging.info('ISSN %s is associated with %s (beyond %s)' % (j, issnl, issn_to_issnl[j]))
 
     return issnl_to_data, title_to_issnl, issn_to_issnl
+
+
+def get_equations(path_equations, sep='|'):
+    """
+    Extrai dicionário de base de predição de volume ISSN-TO-EQUATION.
+
+    :param path_equations: caminho do arquivo da tabela de equações
+    :param sep: delimitador de campo do arquivo
+    :return: dicionário ISSN-TO-EQUATION
+    """
+    issn_to_equation = {}
+    with open(path_equations) as f:
+        csv_reader = csv.DictReader(f, delimiter=sep)
+        for i in csv_reader:
+            issn = i.get('ISSN')
+            a = float(i.get('a'))
+            b = float(i.get('b'))
+            r = float(i.get('r2'))
+            if issn not in issn_to_equation:
+                issn_to_equation[issn] = (a, b, r)
+
+    return issn_to_equation
