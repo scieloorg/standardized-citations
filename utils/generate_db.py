@@ -187,3 +187,56 @@ def main(path_db_title, path_db_year_volume, path_db_year_volume_lr, path_equati
     }
 
     save(dbs, 'bc-' + version + '.bin')
+
+
+if __name__ == '__main__':
+
+    usage = "generate a binary file representing a journal title correction database"
+
+    parser = argparse.ArgumentParser(textwrap.dedent(usage))
+
+    parser.add_argument(
+        '-i', '--path_issnl_to_data',
+        default=None,
+        dest='il2data',
+        help='path of the file issnl_to_data'
+    )
+
+    parser.add_argument(
+        '-y', '--path_issn_year_volume',
+        default=None,
+        dest='iyv',
+        help='path of the file issn_year_volume'
+    )
+
+    parser.add_argument(
+        '-r', '--path_issn_year_volume_lr',
+        default=None,
+        dest='iyvlr',
+        help='path of the file issn_year_volume_lr'
+    )
+
+    parser.add_argument(
+        '-e', '--path_issnl_to_equation',
+        default=None,
+        dest='il2eq',
+        help='path of the file issnl_to_equation'
+    )
+
+    parser.add_argument(
+        '-v', '--version',
+        default=None,
+        dest='version',
+        help='version of the binary file generated'
+    )
+
+    args = parser.parse_args()
+
+    path_db_issnl_to_data = args.il2data
+    path_db_year_volume = args.iyv
+    path_db_year_volume_lr = args.iyvlr
+    path_issnl_to_equation = args.il2eq
+
+    version = args.version
+
+    main(path_db_issnl_to_data, path_db_year_volume, path_db_year_volume_lr, path_issnl_to_equation, version)
