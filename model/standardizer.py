@@ -409,3 +409,48 @@ class Standardizer:
                             if len(cit_valid_matches) == 1:
                                 status = self.get_status(mode, mount_mode, 'lr-ml1')
                                 return self.mount_standardized_citation_data(status, cit_valid_matches.pop())
+
+    def standardize(self, document):
+        """
+        Normaliza referências citadas de um artigo.
+        Atua de duas formas: exata e aproximada.
+        Persiste resultados em arquivo JSON ou em MongoDB.
+
+        :param document: Article dos quais as referências citadas serão normalizadas
+        """
+        std_citations = {}
+
+        if document.citations:
+            for c, cit in enumerate([dc for dc in document.citations if dc.publication_type == 'article']):
+                cit_id = self.mount_id(cit, document.collection_acronym)
+                cit_current_status = self.get_citation_mongo_status(cit_id)
+
+                if cit_current_status == STATUS_NOT_NORMALIZED:
+                    cleaned_cit_journal_title = preprocess_journal_title(cit.source)
+
+                    if cleaned_cit_journal_title:
+
+                        if self.use_exact:
+                            exact_match_result = self._standardize(cit, cleaned_cit_journal_title)
+                            if exact_match_result:
+                                exact_match_result.update({'_id': cit_id, 'cited-journal-title': cleaned_cit_journal_title})
+                                std_citations[cit_id] = exact_match_result
+                                cit_current_status = exact_match_result['status']
+
+                        if self.use_fuzzy:
+                            if cit_current_status == STATUS_NOT_NORMALIZED:
+                                fuzzy_match_result = self._standardize(cit, cleaned_cit_journal_title, mode='fuzzy')
+                                if fuzzy_match_result:
+                                    fuzzy_match_result.update({'_id': cit_id, 'cited-journal-title': cleaned_cit_journal_title})
+                                    std_citations[cit_id] = fuzzy_match_result
+                                    cit_current_status = fuzzy_match_result['status']
+
+                        if cit_current_status == STATUS_NOT_NORMALIZED and (self.use_exact or self.use_fuzzy):
+                            unmatch_result  = {'_id': cit_id,
+                                               'cited-journal-title': cleaned_cit_journal_title,
+                                               'status': STATUS_NOT_NORMALIZED,
+                                               'update-date': datetime.now().strftime('%Y-%m-%d')}
+                            std_citations[cit_id] = unmatch_result
+
+        if std_citations:
+            self.save_standardized_citations(std_citations)
