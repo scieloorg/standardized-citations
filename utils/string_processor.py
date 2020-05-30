@@ -4,6 +4,7 @@ import unicodedata
 
 
 parenthesis_pattern = re.compile(r'[-a-zA-ZÀ-ÖØ-öø-ÿ|0-9]*\([-a-zA-ZÀ-ÖØ-öø-ÿ|\W|0-9]*\)[-a-zA-ZÀ-ÖØ-öø-ÿ|0-9]*', re.UNICODE)
+doi_pattern = re.compile(r'\d{2}\.\d+/.*$')
 special_chars = ['@', '&']
 special_words = ['IMPRESSO', 'ONLINE', 'CDROM', 'PRINT', 'ELECTRONIC']
 
@@ -71,6 +72,18 @@ def preprocess_author_name(text):
     :return: nome tratado do autor
     """
     return remove_double_spaces(alpha_num_space(remove_accents(text)))
+
+
+def preprocess_doi(text):
+    """
+    Procedimento que trata DOI.
+
+    :param text: caracteres que representam um código DOI
+    :return: código DOI tratado
+    """
+    doi = doi_pattern.findall(text)
+    if len(doi) == 1:
+        return doi[0]
 
 
 def preprocess_journal_title(text, use_remove_invalid_chars=False):
