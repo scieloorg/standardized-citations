@@ -224,14 +224,17 @@ class CrossrefAsyncCollector(object):
         try:
             async with session.get(url) as response:
                 try:
-                    logging.info('Trying to collect metadata for %s' % cit_id)
+                    logging.info('Collecting metadata for %s' % cit_id)
 
                     if mode == 'doi':
-                        metadata = await response.json()
+                        raw_metadata = await response.json(content_type=None)
+                        if raw_metadata:
+                            metadata = self.parse_crossref_works_result(raw_metadata)
 
                     else:
                         raw_metadata = await response.text()
-                        metadata = self.parse_crossref_openurl_result(raw_metadata)
+                        if raw_metadata:
+                            metadata = self.parse_crossref_openurl_result(raw_metadata)
 
                     if metadata:
                         id_to_metadata = {'_id': cit_id, 'crossref': metadata}
