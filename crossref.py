@@ -146,6 +146,21 @@ class CrossrefAsyncCollector(object):
             logging.warning("ExpatError {0}".format(text))
             logging.warning(e)
 
+    def parse_crossref_works_result(self, raw_metadata):
+        """
+        Limpa dicionário de metadados obtidos do endpoint WORKS.
+        Remove campo de referências
+
+        :param raw_metadata: resposta de requisição em formato de dicionário
+        :return: JSON com metadados obtidos do serviço Crossref
+        """
+        raw_status = raw_metadata.get('status', '')
+        if raw_status == 'ok':
+            metadata = raw_metadata.get('message')
+            if metadata:
+                if 'reference' in metadata:
+                    metadata.__delitem__('reference')
+                return metadata
     def mount_id(self, cit: Citation, collection: str):
         """
         Monta o identificador de uma referência citada.
