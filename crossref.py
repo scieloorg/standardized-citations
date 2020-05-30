@@ -123,7 +123,7 @@ class CrossrefAsyncCollector(object):
         Converte response.text para JSON com metadados obtidos do endpoint OPENURL.
 
         :param response: resposta de requisição em formato de texto
-        :return: JSON com metadados obtidos no serviço CrossRef
+        :return: JSON com metadados obtidos do serviço CrossRef
         """
         try:
             raw = xmltodict.parse(text)
