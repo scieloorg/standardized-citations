@@ -57,9 +57,16 @@ class CrossrefAsyncCollector(object):
             for cit in article.citations:
                 if cit.publication_type == 'article':
                     cit_id = self.mount_id(cit, article.collection_acronym)
-                    cit_attrs = self._extract_cit_attrs(cit)
+                    cit_attrs = {}
 
-                    cit_id_to_attrs[cit_id] = cit_attrs
+                    if self.persist_mode == 'json':
+                        cit_attrs = self._extract_cit_attrs(cit)
+                    elif self.persist_mode == 'mongo':
+                        if not self.mongo.find_one({'_id': cit_id}):
+                            cit_attrs = self._extract_cit_attrs(cit)
+
+                    if cit_attrs:
+                        cit_id_to_attrs[cit_id] = cit_attrs
 
         return cit_id_to_attrs
 
