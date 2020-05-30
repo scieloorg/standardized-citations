@@ -187,7 +187,7 @@ class CrossrefAsyncCollector(object):
             self.mongo.update_one(filter={'_id': id_to_metadata['_id']},
                                   update={'$set': {
                                       'crossref': id_to_metadata['crossref'],
-                                      'update-date': datetime.now()
+                                      'update-date': datetime.now().strftime('%Y-%m-%d')
                                   }},
                                   upsert=True)
 
