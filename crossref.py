@@ -72,20 +72,23 @@ class CrossrefAsyncCollector(object):
 
     def _extract_cit_attrs(self, cit: Citation):
         """
-        Extraí os atributos de uma referência citada necessários para requisitar metadados CrossRef.
+        Extrai os atributos de uma referência citada necessários para requisitar metadados CrossRef.
 
         :param cit: referência citada
         :return: dicionário de atributos para consulta no serviço CrossRef
         """
         if cit.doi:
-            return {'doi': cit.doi}
+            valid_doi = preprocess_doi(cit.doi)
+            if valid_doi:
+                return {'doi': valid_doi}
 
         attrs = {}
 
         if cit.first_author:
             first_author_surname = cit.first_author.get('surname', '')
-            if first_author_surname:
-                attrs.update({'aulast': first_author_surname})
+            cleaned_author_surname = preprocess_author_name(first_author_surname)
+            if cleaned_author_surname:
+                attrs.update({'aulast': cleaned_author_surname})
 
         journal_title = cit.source
         if journal_title:
@@ -93,19 +96,21 @@ class CrossrefAsyncCollector(object):
             if cleaned_journal_title:
                 attrs.update({'title': cleaned_journal_title})
 
-        publication_year = cit.publication_date
-        if publication_year:
-            attrs.update({'data': publication_year})
+        publication_date = html.unescape(cit.publication_date) if cit.publication_date else None
+        if publication_date and len(publication_date) >= 4:
+            publication_year = publication_date[:4]
+            if publication_year.isdigit():
+                attrs.update({'data': publication_year})
 
-        volume = cit.volume
+        volume = html.unescape(cit.volume) if cit.volume else None
         if volume:
             attrs.update({'volume': volume})
 
-        issue = cit.issue
+        issue = html.unescape(cit.issue) if cit.issue else None
         if issue:
             attrs.update({'issue': issue})
 
-        first_page = cit.first_page
+        first_page = html.unescape(cit.first_page) if cit.first_page else None
         if first_page:
             attrs.update({'spage': first_page})
 
