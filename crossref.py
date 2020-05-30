@@ -161,6 +161,7 @@ class CrossrefAsyncCollector(object):
                 if 'reference' in metadata:
                     metadata.__delitem__('reference')
                 return metadata
+
     def mount_id(self, cit: Citation, collection: str):
         """
         Monta o identificador de uma referência citada.
@@ -241,14 +242,22 @@ class CrossrefAsyncCollector(object):
                         self.save_crossref_metadata(id_to_metadata)
                 except JSONDecodeError as e:
                     logging.warning('JSONDecodeError: %s' % cit_id)
+                    logging.warning(e)
+                except TimeoutError as e:
+                    logging.warning('TimeoutError [INNER]: %s' % cit_id)
+                    logging.warning(e)
         except ContentTypeError as e:
             logging.warning('ContentTypeError: %s' % cit_id)
+            logging.warning(e)
         except ServerDisconnectedError as e:
             logging.warning('ServerDisconnectedError: %s' % cit_id)
+            logging.warning(e)
         except TimeoutError as e:
-            logging.warning('TimeoutError: %s' % cit_id)
+            logging.warning('TimeoutError [OUTER]: %s' % cit_id)
+            logging.warning(e)
         except ClientConnectorError as e:
             logging.warning('ClientConectorError: %s' % cit_id)
+            logging.warning(e)
 
 
 def format_date(date: datetime):
