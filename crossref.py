@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import html
 import json
 import logging
 import textwrap
@@ -12,7 +13,7 @@ from datetime import datetime
 from json import JSONDecodeError
 from pyexpat import ExpatError
 from pymongo import errors, MongoClient
-from utils.string_processor import preprocess_journal_title
+from utils.string_processor import preprocess_author_name, preprocess_doi, preprocess_journal_title
 from xylose.scielodocument import Article, Citation
 
 
