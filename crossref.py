@@ -27,6 +27,8 @@ SEMAPHORE_LIMIT = 20
 
 class CrossrefAsyncCollector(object):
 
+    logging.basicConfig(level=logging.INFO)
+
     def __init__(self, email: None, mongo_database, mongo_collection, mongo_host=None):
         self.email = email
 
