@@ -63,7 +63,8 @@ class CrossrefAsyncCollector(object):
                     if self.persist_mode == 'json':
                         cit_attrs = self._extract_cit_attrs(cit)
                     elif self.persist_mode == 'mongo':
-                        if not self.mongo.find_one({'_id': cit_id}):
+                        cit_data = self.mongo.find_one({'_id': cit_id})
+                        if not cit_data or not cit_data.get('crossref'):
                             cit_attrs = self._extract_cit_attrs(cit)
 
                     if cit_attrs:
