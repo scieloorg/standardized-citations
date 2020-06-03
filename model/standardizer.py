@@ -273,10 +273,6 @@ class Standardizer:
 
             status: código indicador do méetodo para normalizar
 
-            crossref: metadados obtidos do servico CrossRef
-
-            pid: documento SciELO que a referêncica citada representa (se for o caso)
-
             update-date: data de normalização
 
         :param cit: referência citada
@@ -296,8 +292,6 @@ class Standardizer:
                 'official-abbreviated-journal-title': attrs['main-abbrev-title'],
                 'alternative-journal-titles': attrs['alternative-titles'],
                 'status': status,
-                'crossref': {},
-                'pid': '',
                 'update-date': datetime.now().strftime('%Y-%m-%d')
                 }
 
