@@ -141,6 +141,11 @@ class CrossrefAsyncCollector(object):
                     if timestamp:
                         metadata.update({'timestamp': timestamp})
 
+                    journal_article = metadata.get('journal', {}).get('journal_article', {})
+
+                    if 'citation_list' in journal_article:
+                        journal_article.__delitem__('citation_list')
+
                     return metadata
 
         except ExpatError as e:
