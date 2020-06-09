@@ -1,14 +1,17 @@
 import json
 import logging
+import os
 import pickle
 import re
 import time
 
 from datetime import datetime
-from pymongo import errors, MongoClient
+from pymongo import errors, MongoClient, uri_parser
 from utils.string_processor import preprocess_journal_title
 from xylose.scielodocument import Citation
 
+
+MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardizer')
 
 MIN_CHARS_LENGTH = 6
 MIN_WORDS_COUNT = 2
@@ -39,23 +42,28 @@ class Standardizer:
 
     def __init__(self,
                  path_db,
-                 mongo_database,
-                 mongo_collection,
                  use_exact=False,
                  use_fuzzy=False,
-                 mongo_host=None):
+                 mongo_uri_std_cits=None):
 
         self.use_exact = use_exact
         self.use_fuzzy = use_fuzzy
 
-        if mongo_host:
+        if mongo_uri_std_cits:
             try:
                 self.persist_mode = 'mongo'
-                self.mongo = MongoClient(mongo_host)[mongo_database][mongo_collection]
-                total_docs = self.mongo.count_documents({})
-                logging.info('There are {0} documents in the mongo {1}.{2}'.format(total_docs, mongo_database, mongo_collection))
-            except errors.ConnectionFailure as e:
-                logging.error('ConnectionFailure %s' % e)
+                mongo_col = uri_parser.parse_uri(mongo_uri_std_cits).get('collection')
+                if not mongo_col:
+                    mongo_col = MONGO_STDCITS_COLLECTION
+                self.standardizer = MongoClient(mongo_uri_std_cits).get_database().get_collection(mongo_col)
+
+                total_docs = self.standardizer.count_documents({})
+                logging.info(
+                    'There are {0} documents in the collection {1}'.format(total_docs, mongo_col))
+            except ConnectionError as e:
+                logging.error('ConnectionError %s' % mongo_uri_std_cits)
+                logging.error(e)
+
         else:
             self.persist_mode = 'json'
             self.path_results = 'std-results-' + str(time.time()) + '.json'
@@ -310,7 +318,7 @@ class Standardizer:
 
         elif self.persist_mode == 'mongo':
             for v in std_citations.values():
-                self.mongo.update_one(
+                self.standardizer.update_one(
                     filter={'_id': v['_id']},
                     update={'$set': v},
                     upsert=True)
@@ -323,7 +331,7 @@ class Standardizer:
         :return: status atual de normalização da referência citada
         """
         if self.persist_mode == 'mongo':
-            cit_standardized = self.mongo.find_one({'_id': cit_id})
+            cit_standardized = self.standardizer.find_one({'_id': cit_id})
             if cit_standardized:
                 return cit_standardized.get('status', STATUS_NOT_NORMALIZED)
         return STATUS_NOT_NORMALIZED

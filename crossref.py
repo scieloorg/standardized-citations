@@ -3,6 +3,7 @@ import asyncio
 import html
 import json
 import logging
+import os
 import textwrap
 import time
 import xmltodict
@@ -12,13 +13,12 @@ from articlemeta.client import RestfulClient
 from datetime import datetime
 from json import JSONDecodeError
 from pyexpat import ExpatError
-from pymongo import errors, MongoClient
+from pymongo import errors, MongoClient, uri_parser
 from utils.string_processor import preprocess_author_name, preprocess_doi, preprocess_journal_title
 from xylose.scielodocument import Article, Citation
 
 
-DEFAULT_MONGO_DATABASE_NAME = 'citations'
-DEFAULT_MONGO_COLLECTION_NAME = 'standardized'
+MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardizer')
 
 ENDPOINT_CROSSREF_WORKS = 'https://api.crossref.org/works/{}'
 ENDPOINT_CROSSREF_OPENURL = 'https://doi.crossref.org/openurl?'
@@ -30,17 +30,23 @@ class CrossrefAsyncCollector(object):
 
     logging.basicConfig(level=logging.INFO)
 
-    def __init__(self, email: None, mongo_database, mongo_collection, mongo_host=None):
+    def __init__(self, email: None, mongo_uri_std_cits=None):
         self.email = email
 
-        if mongo_host:
+        if mongo_uri_std_cits:
             try:
                 self.persist_mode = 'mongo'
-                self.mongo = MongoClient(mongo_host)[mongo_database][mongo_collection]
-                total_docs = self.mongo.count_documents({})
-                logging.info('There are {0} documents in the mongo {1}.{2}'.format(total_docs, mongo_database, mongo_collection))
-            except errors.ConnectionFailure as e:
-                logging.error('ConnectionFailure %s' % e)
+                mongo_col = uri_parser.parse_uri(mongo_uri_std_cits).get('collection')
+                if not mongo_col:
+                    mongo_col = MONGO_STDCITS_COLLECTION
+                self.standardizer = MongoClient(mongo_uri_std_cits).get_database().get_collection(mongo_col)
+
+                total_docs = self.standardizer.count_documents({})
+                logging.info('There are {0} documents in the collection {1}'.format(total_docs, mongo_col))
+            except ConnectionError as e:
+                logging.error('ConnectionError %s' % mongo_uri_std_cits)
+                logging.error(e)
+
         else:
             self.persist_mode = 'json'
             self.path_results = 'crossref-results-' + str(time.time()) + '.json'
@@ -63,7 +69,7 @@ class CrossrefAsyncCollector(object):
                     if self.persist_mode == 'json':
                         cit_attrs = self._extract_cit_attrs(cit)
                     elif self.persist_mode == 'mongo':
-                        cit_data = self.mongo.find_one({'_id': cit_id})
+                        cit_data = self.standardizer.find_one({'_id': cit_id})
                         if not cit_data or not cit_data.get('crossref'):
                             cit_attrs = self._extract_cit_attrs(cit)
 
@@ -191,7 +197,7 @@ class CrossrefAsyncCollector(object):
                 f.write('\n')
 
         elif self.persist_mode == 'mongo':
-            self.mongo.update_one(filter={'_id': id_to_metadata['_id']},
+            self.standardizer.update_one(filter={'_id': id_to_metadata['_id']},
                                   update={'$set': {
                                       'crossref': id_to_metadata['crossref'],
                                       'update-date': datetime.now().strftime('%Y-%m-%d')
@@ -307,24 +313,10 @@ def main():
     )
 
     parser.add_argument(
-        '-a', '--mongo_host',
+        '--mongo_uri',
         default=None,
-        dest='mongo_host',
-        help='MongoDB host address'
-    )
-
-    parser.add_argument(
-        '-m', '--mongo_database',
-        default=DEFAULT_MONGO_DATABASE_NAME,
-        dest='mongo_database',
-        help='MongoDB database name'
-    )
-
-    parser.add_argument(
-        '-l', '--mongo_collection',
-        default=DEFAULT_MONGO_COLLECTION_NAME,
-        dest='mongo_collection',
-        help='MongoDB collection name'
+        dest='mongo_uri_std_cits',
+        help='mongo uri string in the format mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]'
     )
 
     parser.add_argument(
@@ -340,10 +332,7 @@ def main():
     try:
 
         art_meta = RestfulClient()
-        cac = CrossrefAsyncCollector(email=args.email,
-                                     mongo_host=args.mongo_host,
-                                     mongo_database=args.mongo_database,
-                                     mongo_collection=args.mongo_collection)
+        cac = CrossrefAsyncCollector(email=args.email, mongo_uri_std_cits=args.mongo_uri_std_cits)
 
         cit_ids_to_attrs = {}
 

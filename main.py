@@ -100,24 +100,10 @@ def main():
     )
 
     parser.add_argument(
-        '-a', '--mongo_host',
+        '--mongo_uri',
         default=None,
-        dest='mongo_host',
-        help='MongoDB host address'
-    )
-
-    parser.add_argument(
-        '-m', '--mongo_database',
-        default=DEFAULT_MONGO_DATABASE_NAME,
-        dest='mongo_database',
-        help='MongoDB database name'
-    )
-
-    parser.add_argument(
-        '-l', '--mongo_collection',
-        default=DEFAULT_MONGO_COLLECTION_NAME,
-        dest='mongo_collection',
-        help='MongoDB collection name'
+        dest='mongo_uri_std_cits',
+        help='mongo uri string in the format mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]'
     )
 
     args = parser.parse_args()
@@ -126,11 +112,9 @@ def main():
 
         sz = Standardizer(
             path_db=args.db,
-            mongo_database=args.mongo_database,
-            mongo_collection=args.mongo_collection,
             use_exact=args.use_exact,
             use_fuzzy=args.use_fuzzy,
-            mongo_host=args.mongo_host
+            mongo_uri_std_cits=args.mongo_uri_std_cits
         )
 
         art_meta = RestfulClient()
