@@ -10,6 +10,7 @@ from time import time
 
 DEFAULT_MONGO_DATABASE_NAME = 'citations'
 DEFAULT_MONGO_COLLECTION_NAME = 'standardized'
+DIR_DATA = os.environ.get('DIR_DATA', '/opt/data')
 
 
 def format_date(date: datetime):

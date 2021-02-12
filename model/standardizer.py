@@ -11,7 +11,8 @@ from utils.string_processor import preprocess_journal_title
 from xylose.scielodocument import Citation
 
 
-MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardizer')
+DIR_DATA = os.environ.get('DIR_DATA', '/opt/data')
+MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardized')
 
 MIN_CHARS_LENGTH = 6
 MIN_WORDS_COUNT = 2
@@ -66,7 +67,8 @@ class Standardizer:
 
         else:
             self.persist_mode = 'json'
-            self.path_results = 'std-results-' + str(time.time()) + '.json'
+            file_name_results = 'std-results-' + str(time.time()) + '.json'
+            self.path_results = os.path.join(DIR_DATA, file_name_results)
 
         if path_db:
             logging.info('Loading %s' % path_db)
@@ -448,10 +450,10 @@ class Standardizer:
                                     cit_current_status = fuzzy_match_result['status']
 
                         if cit_current_status == STATUS_NOT_NORMALIZED and (self.use_exact or self.use_fuzzy):
-                            unmatch_result  = {'_id': cit_id,
-                                               'cited-journal-title': cleaned_cit_journal_title,
-                                               'status': STATUS_NOT_NORMALIZED,
-                                               'update-date': datetime.now().strftime('%Y-%m-%d')}
+                            unmatch_result = {'_id': cit_id,
+                                              'cited-journal-title': cleaned_cit_journal_title,
+                                              'status': STATUS_NOT_NORMALIZED,
+                                              'update-date': datetime.now().strftime('%Y-%m-%d')}
                             std_citations[cit_id] = unmatch_result
 
         if std_citations:

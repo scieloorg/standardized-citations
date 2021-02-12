@@ -18,6 +18,7 @@ from utils.string_processor import preprocess_author_name, preprocess_doi, prepr
 from xylose.scielodocument import Article, Citation
 
 
+DIR_DATA = os.environ.get('DIR_DATA', '/opt/data')
 MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardized')
 
 ENDPOINT_CROSSREF_WORKS = 'https://api.crossref.org/works/{}'
