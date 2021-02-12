@@ -21,10 +21,9 @@ from xylose.scielodocument import Article, Citation
 DIR_DATA = os.environ.get('DIR_DATA', '/opt/data')
 MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardized')
 
-ENDPOINT_CROSSREF_WORKS = 'https://api.crossref.org/works/{}'
-ENDPOINT_CROSSREF_OPENURL = 'https://doi.crossref.org/openurl?'
-
-SEMAPHORE_LIMIT = 20
+CROSSREF_URL_WORKS = os.environ.get('CROSSREF_URL_WORKS', 'https://api.crossref.org/works/{}')
+CROSSREF_URL_OPENURL = os.environ.get('CROSSREF_URL_OPENURL', 'https://doi.crossref.org/openurl?')
+CROSSREF_SEMAPHORE_LIMIT = int(os.environ.get('CROSSREF_SEMAPHORE_LIMIT', '20'))
 
 
 class CrossrefAsyncCollector(object):
@@ -50,7 +49,8 @@ class CrossrefAsyncCollector(object):
 
         else:
             self.persist_mode = 'json'
-            self.path_results = 'crossref-results-' + str(time.time()) + '.json'
+            file_name_results = 'crossref-results-' + str(time.time()) + '.json'
+            self.path_results = os.path.join(DIR_DATA, file_name_results)
 
     def extract_attrs(self, article: Article):
         """
@@ -206,17 +206,17 @@ class CrossrefAsyncCollector(object):
                                   upsert=True)
 
     async def run(self, citations_attrs: dict):
-        sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
+        sem = asyncio.Semaphore(CROSSREF_SEMAPHORE_LIMIT)
         tasks = []
 
         async with ClientSession(headers={'mailto:': self.email}) as session:
             for cit_id, attrs in citations_attrs.items():
                 if 'doi' in attrs:
-                    url = ENDPOINT_CROSSREF_WORKS.format(attrs['doi'])
+                    url = CROSSREF_URL_WORKS.format(attrs['doi'])
                     mode = 'doi'
 
                 else:
-                    url = ENDPOINT_CROSSREF_OPENURL
+                    url = CROSSREF_URL_OPENURL
                     for k, v in attrs.items():
                         if k != 'doi':
                             url += '&' + k + '=' + v

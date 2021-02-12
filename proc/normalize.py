@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import textwrap
 
 from articlemeta.client import RestfulClient
@@ -8,9 +9,9 @@ from model.standardizer import Standardizer
 from time import time
 
 
-DEFAULT_MONGO_DATABASE_NAME = 'citations'
-DEFAULT_MONGO_COLLECTION_NAME = 'standardized'
 DIR_DATA = os.environ.get('DIR_DATA', '/opt/data')
+MONGO_DATABASE_NAME = os.environ.get('MONGO_DATABASE_NAME', 'citations')
+MONGO_COLLECTION_NAME = os.environ.get('MONGO_COLLECTION_NAME', 'standardized')
 
 
 def format_date(date: datetime):
@@ -71,8 +72,8 @@ def main():
 
     parser.add_argument(
         '-d', '--database',
-        required=True,
         dest='db',
+        default=os.path.join(DIR_DATA, 'bc.bin'),
         help='binary file containing a dictionary composed of five bases: '
              'title-to-issnl, '
              'issnl-to-issns, '
