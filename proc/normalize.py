@@ -145,7 +145,3 @@ def main():
 
     except KeyboardInterrupt:
         print("Interrupt by user")
-
-
-if __name__ == '__main__':
-    main()
