@@ -6,25 +6,26 @@ Este repositório concentra métodos utilizados para normalizar referências cit
 2. Enriquecê-las com dados coletados em bases externas (CrossRef e bases ad hoc)
 
 
+## Instalação
+`docker build --tag standardized-citations:0.1 .`
+
+__Insumos__
+- Arquivo binário contendo bases de correção de periódicos (`bc-v1.bin`)
+
 ## Como Usar
 
-1. Normalizar referências citadas em PIDs publicados a partir de 2020-05-01, da coleção Uruguai, usando métodos exato e aproximado e persistindo em JSON:
+1. Normalizar referências citadas em PIDs publicados de 2021-02-01 a 2021-02-07 usando métodos exato e aproximado e persistindo em JSON:
 
-    `python main.py -f 2020-05-01 -c ury -x -z`
+`docker run --rm -v {HOST_DIR_DATA}:/opt/data standardized-citations:0.1 normalize -f 2021-02-01 -u 2021-02-07 -x -z -d /opt/data/bc-v1.bin`
 
-  
-2. Normalizar referências citadas em PIDs publicados a partir de 2020-05-01 usando métodos exato e fuzzy e persistindo em MongoDB:
-    
-    `python main.py -f 2020-05-01 -x -z -a {MONGO-ADDRESS} -m {MONGO-DATABASE} -l {MONGO-COLLECTION}`
+2. Coletar metadados Crossref para referências citadas em PIDs publicados entre 2021-02-01 e 2021-02-07:
 
-    _Caso não sejam informados -m e -l, é considerado por padrão a base de dados "citations" e a coleção 'standardized'_
-  
-    
-3. Coletar metadados Crossref para referências citadas em PIDs publicados a partir de 2020-05-01:
+`docker run --rm -v {HOST_DIR_DATA}:/opt/data standardized-citations:0.1 crossref -f 2021-02-01 -u 2021-02-07`
 
-    `python crossref.py -f 2020-05-01 -a {MONGO-ADDRESS} -m {MONGO-DATABASE} -l {MONGO-COLLECTION} -e {E-MAIL}`
-    
-    __É preciso ter um e-mail registrado no serviço Crossref__
+__Notas__
+- É preciso ter um e-mail registrado no serviço Crossref
+- Os resultados, por padrão, são persistidos em arquivos JSON no diretório DIR_DATA
+- É possível persistir os resultados em um banco de dados MongoDB (ao informar uma string de conexão)
 
 
 
@@ -34,9 +35,7 @@ Este repositório concentra métodos utilizados para normalizar referências cit
 |-----------|------|-----------|
 |-z|--fuzzy|Ativa casamento aproximado de títulos de periódicos|
 |-x|--fuzzy|Ativa casamento exato de títulos de periódicos|
-|-a|--mongo_host|Endereço da base de dados em MongoDB|
-|-m|--mongo_database|Nome da base de dados MongoDB|
-|-l|--mongo_collection|Nome da coleção da base de dados MongoDB|
+||--mongo_uri|String de conexão com banco de dados MongoDB|
 |-d|--database|Arquivo binário da base de correção de títulos|
 |-f|--from_date|Data a partir da qual os PIDs serão coletados no ArticleMeta e suas referências citadas serão normalizadas|
 |-u|--until_date|Data até a qual os PIDs serão coletados no ArticleMeta e suas referências citadas serão normalizadas|
@@ -46,9 +45,7 @@ Este repositório concentra métodos utilizados para normalizar referências cit
 
 | Parâmetro | Nome | Descrição |
 |-----------|------|-----------|
-|-a|--mongo_host|Endereço da base de dados em MongoDB|
-|-m|--mongo_database|Nome da base de dados MongoDB|
-|-l|--mongo_collection|Nome da coleção da base de dados MongoDB|
+||--mongo_uri|String de conexão com banco de dados MongoDB|
 |-e|--email|E-mail registrado no serviço Crossref|
 |-f|--from_date|Data a partir da qual os PIDs serão coletados no ArticleMeta|
 |-u|--until_date|Data até a qual os PIDs serão coletados no ArticleMeta|
