@@ -1,4 +1,4 @@
-aiohttp==3.7.3
+aiohttp==3.7.4
 articlemetaapi==1.26.7
 asyncio==3.4.3
 lxml==4.6.2
