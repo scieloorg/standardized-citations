@@ -6,7 +6,7 @@ install_requires = [
     'aiohttp==3.7.3',
     'articlemetaapi==1.26.7',
     'asyncio==3.4.3',
-    'lxml==4.6.2',
+    'lxml==4.9.1',
     'pymongo==3.11.3',
     'xmltodict==0.12.0',
     'xylose==1.35.4',
