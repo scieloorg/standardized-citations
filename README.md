@@ -1,4 +1,4 @@
-# standardized-citations
+# standardized-citations (repositório descontinuado em favor de https://github.com/scieloorg/cited-references)
 
 Este repositório concentra métodos utilizados para normalizar referências citadas nos documentos SciELO. O processo de normalização consiste em duas etapas, a saber:
 
